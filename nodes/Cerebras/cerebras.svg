@@ -1,0 +1,60 @@
+<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cerebrasGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563EB"/>
+      <stop offset="50%" style="stop-color:#1D4ED8"/>
+      <stop offset="100%" style="stop-color:#1E40AF"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="30" cy="30" r="28" fill="#F8FAFC" stroke="url(#cerebrasGradient)" stroke-width="2"/>
+  
+  <!-- Wafer representation - central hexagon -->
+  <polygon points="30,8 40,18 40,32 30,42 20,32 20,18" 
+           fill="url(#cerebrasGradient)" 
+           opacity="0.9"/>
+  
+  <!-- Circuit patterns -->
+  <g stroke="white" stroke-width="1" fill="none" opacity="0.8">
+    <!-- Horizontal lines -->
+    <line x1="22" y1="20" x2="38" y2="20"/>
+    <line x1="22" y1="25" x2="38" y2="25"/>
+    <line x1="22" y1="30" x2="38" y2="30"/>
+    <line x1="22" y1="35" x2="38" y2="35"/>
+    
+    <!-- Vertical lines -->
+    <line x1="25" y1="15" x2="25" y2="35"/>
+    <line x1="30" y1="12" x2="30" y2="38"/>
+    <line x1="35" y1="15" x2="35" y2="35"/>
+  </g>
+  
+  <!-- Processing cores (small squares) -->
+  <g fill="white" opacity="0.9">
+    <rect x="24" y="19" width="2" height="2"/>
+    <rect x="28" y="19" width="2" height="2"/>
+    <rect x="32" y="19" width="2" height="2"/>
+    <rect x="36" y="19" width="2" height="2"/>
+    
+    <rect x="24" y="24" width="2" height="2"/>
+    <rect x="28" y="24" width="2" height="2"/>
+    <rect x="32" y="24" width="2" height="2"/>
+    <rect x="36" y="24" width="2" height="2"/>
+    
+    <rect x="24" y="29" width="2" height="2"/>
+    <rect x="28" y="29" width="2" height="2"/>
+    <rect x="32" y="29" width="2" height="2"/>
+    <rect x="36" y="29" width="2" height="2"/>
+    
+    <rect x="24" y="34" width="2" height="2"/>
+    <rect x="28" y="34" width="2" height="2"/>
+    <rect x="32" y="34" width="2" height="2"/>
+    <rect x="36" y="34" width="2" height="2"/>
+  </g>
+  
+  <!-- Central processing indicator -->
+  <circle cx="30" cy="25" r="1.5" fill="white"/>
+  
+  <!-- Brand indicator -->
+  <text x="30" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="bold" fill="url(#cerebrasGradient)">C</text>
+</svg>

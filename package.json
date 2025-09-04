@@ -1,19 +1,23 @@
 {
-  "name": "n8n-nodes-<...>",
-  "version": "0.1.0",
-  "description": "",
+  "name": "n8n-nodes-cerebras-api",
+  "version": "0.2.2",
+  "description": "n8n community node for Cerebras inference API integration",
   "keywords": [
-    "n8n-community-node-package"
+    "n8n-community-node-package",
+    "cerebras",
+    "ai",
+    "llm",
+    "inference"
   ],
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/kevint-cerebras/n8n-cerebras",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Kevin Taylor",
+    "email": "kevin.taylor@cerebras.net"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/kevint-cerebras/n8n-cerebras.git"
   },
   "engines": {
     "node": ">=20.15"
@@ -33,12 +37,10 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
+      "dist/credentials/CerebrasApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/Cerebras/Cerebras.node.js"
     ]
   },
   "devDependencies": {
@@ -48,6 +50,10 @@
     "gulp": "^5.0.0",
     "prettier": "^3.5.3",
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "n8n": "^1.109.2",
+    "openai": "^4.67.3"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
