@@ -21,11 +21,12 @@ const CEREBRAS_MODELS = [
 	{ name: 'Qwen 3 Coder 480B', value: 'qwen-3-coder-480b' },
 ];
 
-export class CerebrasChat implements INodeType {
+export class CerebrasChatModel implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Cerebras Chat Model',
 		name: 'cerebrasChatModel',
-		icon: 'file:cerebras.svg',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:cerebras.png',
 		group: ['transform'],
 		version: 1,
 		description: 'Use Cerebras AI models with AI Agents and LangChain',

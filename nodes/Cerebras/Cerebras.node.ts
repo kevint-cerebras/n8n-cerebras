@@ -26,7 +26,8 @@ export class Cerebras implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Cerebras AI',
 		name: 'cerebras',
-		icon: 'file:cerebras.svg',
+		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
+		icon: 'file:cerebras.png',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["model"]}}',
