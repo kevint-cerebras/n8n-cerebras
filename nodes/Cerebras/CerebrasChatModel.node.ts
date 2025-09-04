@@ -24,21 +24,20 @@ const CEREBRAS_MODELS = [
 
 export class CerebrasChatModel implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Cerebras Chat Model',
+		displayName: 'Cerebras AI',
 		name: 'cerebrasChatModel',
-		// eslint-disable-next-line n8n-nodes-base/node-class-description-icon-not-svg
-		icon: 'file:cerebras.png',
+		icon: 'file:cerebras.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["model"]}}',
-		description: 'Ultra-fast AI inference with Cerebras models',
+		description: 'Ultra-fast AI chat completions with Cerebras models',
 		defaults: {
-			name: 'Cerebras Chat Model',
+			name: 'Cerebras AI',
 		},
 		codex: {
 			categories: ['AI'],
 			subcategories: {
-				AI: ['Language Models', 'Chat Models'],
+				AI: ['Language Models'],
 			},
 			resources: {
 				primaryDocumentation: [
