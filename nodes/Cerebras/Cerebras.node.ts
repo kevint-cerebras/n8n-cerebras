@@ -29,7 +29,7 @@ export class Cerebras implements INodeType {
 		icon: 'file:cerebras.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["operation"]}}',
+		subtitle: '={{$parameter["model"]}}',
 		description: 'Interact with Cerebras AI inference API using OpenAI-compatible endpoints',
 		defaults: {
 			name: 'Cerebras AI',
@@ -44,29 +44,6 @@ export class Cerebras implements INodeType {
 			},
 		],
 		properties: [
-			// Operation selector
-			{
-				displayName: 'Operation',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				options: [
-					{
-						name: 'Chat Completion',
-						value: 'chatCompletion',
-						description: 'Generate a chat completion using messages',
-						action: 'Create a chat completion',
-					},
-					{
-						name: 'Text Completion',
-						value: 'textCompletion',
-						description: 'Generate a text completion from a prompt',
-						action: 'Create a text completion',
-					},
-				],
-				default: 'chatCompletion',
-			},
-
 			// Model selection
 			{
 				displayName: 'Model',
@@ -77,83 +54,30 @@ export class Cerebras implements INodeType {
 				description: 'The Cerebras model to use for the request',
 			},
 
-			// Chat completion fields
-			{
-				displayName: 'Messages',
-				name: 'messages',
-				type: 'fixedCollection',
-				displayOptions: {
-					show: {
-						operation: ['chatCompletion'],
-					},
-				},
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: {
-					values: [
-						{
-							role: 'user',
-							content: '',
-						},
-					],
-				},
-				options: [
-					{
-						name: 'values',
-						displayName: 'Message',
-						values: [
-							{
-								displayName: 'Role',
-								name: 'role',
-								type: 'options',
-								options: [
-									{
-										name: 'System',
-										value: 'system',
-									},
-									{
-										name: 'User',
-										value: 'user',
-									},
-									{
-										name: 'Assistant',
-										value: 'assistant',
-									},
-								],
-								default: 'user',
-							},
-							{
-								displayName: 'Content',
-								name: 'content',
-								type: 'string',
-								typeOptions: {
-									rows: 4,
-								},
-								default: '',
-								placeholder: 'Enter the message content...',
-							},
-						],
-					},
-				],
-			},
-
-			// Text completion fields
+			// Simple prompt for easy use
 			{
 				displayName: 'Prompt',
 				name: 'prompt',
 				type: 'string',
-				displayOptions: {
-					show: {
-						operation: ['textCompletion'],
-					},
-				},
 				typeOptions: {
-					rows: 4,
+					rows: 6,
 				},
 				default: '',
-				placeholder: 'Enter your prompt...',
-				description: 'The prompt to generate completion for',
+				placeholder: 'Enter your prompt or question...',
+				description: 'Your prompt or question for the AI',
+			},
+
+			// Optional system message
+			{
+				displayName: 'System Message',
+				name: 'systemMessage',
+				type: 'string',
+				typeOptions: {
+					rows: 3,
+				},
+				default: '',
+				placeholder: 'Optional: Set the AI\'s behavior (e.g., "You are a helpful assistant")',
+				description: 'Optional system message to set the AI\'s behavior and context',
 			},
 
 			// Advanced parameters
@@ -259,66 +183,49 @@ export class Cerebras implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const operation = this.getNodeParameter('operation', i) as string;
 				const model = this.getNodeParameter('model', i) as string;
+				const prompt = this.getNodeParameter('prompt', i) as string;
+				const systemMessage = this.getNodeParameter('systemMessage', i) as string;
 				const advancedParameters = this.getNodeParameter('advancedParameters', i) as any;
 
-				let response: any;
-
-				if (operation === 'chatCompletion') {
-					// Get messages
-					const messages = this.getNodeParameter('messages', i) as any;
-					const messagesData = messages.values as ChatCompletionMessageParam[];
-
-					if (!messagesData || messagesData.length === 0) {
-						throw new NodeOperationError(
-							this.getNode(),
-							'At least one message is required for chat completion',
-							{
-								itemIndex: i,
-							},
-						);
-					}
-
-					// Build request parameters
-					const requestParams: any = {
-						model,
-						messages: messagesData,
-						...buildAdvancedParameters(advancedParameters),
-					};
-
-					// Make chat completion request
-					response = await openai.chat.completions.create(requestParams);
-				} else if (operation === 'textCompletion') {
-					// Get prompt
-					const prompt = this.getNodeParameter('prompt', i) as string;
-
-					if (!prompt) {
-						throw new NodeOperationError(this.getNode(), 'Prompt is required for text completion', {
-							itemIndex: i,
-						});
-					}
-
-					// Build request parameters
-					const requestParams: any = {
-						model,
-						prompt,
-						...buildAdvancedParameters(advancedParameters),
-					};
-
-					// Make completion request
-					response = await openai.completions.create(requestParams);
-				} else {
-					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`, {
+				if (!prompt) {
+					throw new NodeOperationError(this.getNode(), 'Prompt is required', {
 						itemIndex: i,
 					});
 				}
+
+				// Build messages array
+				const messages: ChatCompletionMessageParam[] = [];
+				
+				// Add system message if provided
+				if (systemMessage) {
+					messages.push({
+						role: 'system',
+						content: systemMessage,
+					});
+				}
+
+				// Add user prompt
+				messages.push({
+					role: 'user',
+					content: prompt,
+				});
+
+				// Build request parameters
+				const requestParams: any = {
+					model,
+					messages,
+					...buildAdvancedParameters(advancedParameters),
+				};
+
+				// Make chat completion request
+				const response = await openai.chat.completions.create(requestParams);
 
 				returnData.push({
 					json: {
 						...response,
 						model,
-						operation,
+						operation: 'chatCompletion',
 					},
 				});
 			} catch (error) {
@@ -330,7 +237,7 @@ export class Cerebras implements INodeType {
 							json: {
 								error: errorMessage,
 								model: this.getNodeParameter('model', i),
-								operation: this.getNodeParameter('operation', i),
+								operation: 'chatCompletion',
 							},
 						});
 						continue;
@@ -344,7 +251,7 @@ export class Cerebras implements INodeType {
 						json: {
 							error: error.message,
 							model: this.getNodeParameter('model', i),
-							operation: this.getNodeParameter('operation', i),
+							operation: 'chatCompletion',
 						},
 					});
 					continue;
