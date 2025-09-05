@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-cerebras-api",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "n8n community node for Cerebras inference API integration",
   "keywords": [
     "n8n-community-node-package",
@@ -52,11 +52,9 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "openai": "^4.67.3",
-    "@langchain/openai": "^0.0.34"
+    "openai": "^4.67.3"
   },
   "peerDependencies": {
-    "n8n-workflow": "*",
-    "@n8n/n8n-nodes-langchain": "*"
+    "n8n-workflow": "*"
   }
 }
