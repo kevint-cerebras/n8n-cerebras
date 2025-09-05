@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-cerebras-api",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "n8n community node for Cerebras inference API integration",
   "keywords": [
     "n8n-community-node-package",
