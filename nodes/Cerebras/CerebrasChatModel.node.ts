@@ -1,13 +1,10 @@
-import type {
-	IExecuteFunctions,
-	INodeExecutionData,
+import {
 	INodeType,
 	INodeTypeDescription,
+	ISupplyDataFunctions,
 } from 'n8n-workflow';
-import { NodeOperationError } from 'n8n-workflow';
 
-import OpenAI from 'openai';
-import type { APIError } from 'openai/error';
+import { ChatOpenAI, ChatOpenAICallOptions } from '@langchain/openai';
 
 // Available Cerebras models
 const CEREBRAS_MODELS = [
@@ -24,20 +21,20 @@ const CEREBRAS_MODELS = [
 
 export class CerebrasChatModel implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Cerebras AI',
+		displayName: 'Cerebras Chat Model',
 		name: 'cerebrasChatModel',
 		icon: 'file:cerebras.svg',
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["model"]}}',
-		description: 'Ultra-fast AI chat completions with Cerebras models',
+		description: 'Language model for AI Agent nodes',
 		defaults: {
-			name: 'Cerebras AI',
+			name: 'Cerebras Chat Model',
 		},
 		codex: {
 			categories: ['AI'],
 			subcategories: {
-				AI: ['Language Models'],
+				AI: ['Language Models', 'Root AI'],
 			},
 			resources: {
 				primaryDocumentation: [
@@ -47,8 +44,8 @@ export class CerebrasChatModel implements INodeType {
 				],
 			},
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [],
+		outputs: ['ai_languageModel'],
 		credentials: [
 			{
 				name: 'cerebrasApi',
@@ -68,32 +65,10 @@ export class CerebrasChatModel implements INodeType {
 				default: 'llama3.1-8b',
 			},
 			{
-				displayName: 'Prompt',
-				name: 'prompt',
-				type: 'string',
-				description: 'The message or question to send to the AI model',
-				typeOptions: {
-					rows: 4,
-				},
-				default: '',
-				placeholder: 'What would you like to know?',
-			},
-			{
-				displayName: 'System Message',
-				name: 'systemMessage',
-				type: 'string',
-				description: 'System message to set the behavior and context for the AI',
-				typeOptions: {
-					rows: 2,
-				},
-				default: 'You are a helpful AI assistant.',
-				placeholder: 'You are a helpful AI assistant.',
-			},
-			{
-				displayName: 'Advanced Parameters',
-				name: 'advancedParameters',
-				placeholder: 'Add Parameter',
-				description: 'Additional parameters to customize the AI response',
+				displayName: 'Options',
+				name: 'options',
+				placeholder: 'Add Option',
+				description: 'Additional parameters to customize the AI model',
 				type: 'collection',
 				default: {},
 				options: [
@@ -145,74 +120,28 @@ export class CerebrasChatModel implements INodeType {
 		],
 	};
 
-	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
-		const returnData: INodeExecutionData[] = [];
-
+	async supplyData(this: ISupplyDataFunctions, itemIndex: number) {
 		const credentials = await this.getCredentials('cerebrasApi');
 		const apiKey = credentials.apiKey as string;
+		
+		const model = this.getNodeParameter('model', itemIndex) as string;
+		const options = this.getNodeParameter('options', itemIndex) as any;
 
-		const openai = new OpenAI({
-			apiKey,
-			baseURL: 'https://api.cerebras.ai/v1',
-		});
+		const chatModel = new ChatOpenAI({
+			modelName: model,
+			temperature: options.temperature as number ?? 0.7,
+			maxTokens: options.maxTokens as number ?? 1000,
+			topP: options.topP as number ?? 1,
+			frequencyPenalty: options.frequencyPenalty as number ?? 0,
+			presencePenalty: options.presencePenalty as number ?? 0,
+			openAIApiKey: apiKey,
+			configuration: {
+				baseURL: 'https://api.cerebras.ai/v1',
+			},
+		} as Partial<ChatOpenAICallOptions>);
 
-		for (let i = 0; i < items.length; i++) {
-			try {
-				const model = this.getNodeParameter('model', i) as string;
-				const prompt = this.getNodeParameter('prompt', i) as string;
-				const systemMessage = this.getNodeParameter('systemMessage', i) as string;
-				const advancedParameters = this.getNodeParameter('advancedParameters', i, {}) as any;
-
-				if (!prompt) {
-					throw new NodeOperationError(this.getNode(), 'Prompt is required', { itemIndex: i });
-				}
-
-				const messages = [
-					{
-						role: 'system' as const,
-						content: systemMessage,
-					},
-					{
-						role: 'user' as const,
-						content: prompt,
-					},
-				];
-
-				const completion = await openai.chat.completions.create({
-					model,
-					messages,
-					temperature: advancedParameters.temperature ?? 0.7,
-					max_tokens: advancedParameters.maxTokens ?? 1000,
-					top_p: advancedParameters.topP ?? 1,
-					frequency_penalty: advancedParameters.frequencyPenalty ?? 0,
-					presence_penalty: advancedParameters.presencePenalty ?? 0,
-				});
-
-				const response = completion.choices[0]?.message?.content || '';
-
-				returnData.push({
-					json: {
-						model,
-						prompt,
-						response,
-						usage: completion.usage,
-						finishReason: completion.choices[0]?.finish_reason,
-					},
-				});
-			} catch (error) {
-				if (error instanceof Error && 'status' in error) {
-					const apiError = error as APIError;
-					throw new NodeOperationError(
-						this.getNode(),
-						`Cerebras API Error (${apiError.status}): ${apiError.message}`,
-						{ itemIndex: i },
-					);
-				}
-				throw new NodeOperationError(this.getNode(), `Error: ${error}`, { itemIndex: i });
-			}
-		}
-
-		return [returnData];
+		return {
+			response: chatModel,
+		};
 	}
 }
